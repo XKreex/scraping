@@ -57,6 +57,7 @@ def work(url):
 def rabota(url):
     jobs = []
     errors = []
+    domain = 'https://www.rabota.ru'
     resp = requests.get(url, headers=headers[randint(0,3)])
     domain = 'https://www.rabota.ru'
     if resp.status_code == 200:
@@ -69,27 +70,32 @@ def rabota(url):
                 div_pointer = art.find('div', attrs={'class': 'vacancy-preview-card__wrapper_pointer'})
                 div_card__top = div_pointer.find('div', attrs={'class': 'vacancy-preview-card__top'})
                 div_card__content = div_card__top.find('div', attrs={'class': 'vacancy-preview-card__content-wrapper'})
-                header = div_card__content.find('header', attrs={'class': 'vacancy-preview-card__header'})
-                h3 = header.find('h3', attrs={'class': 'vacancy-preview-card__title'})
-                title = h3.a.text
-                #href = title.a['href']
-                #content = div.p.text
+                title = div_card__content.header.h3.a.text
+                href = div_card__content.header.h3.a['href']
+
+                div_content = div_card__content.find('div', attrs={'class': 'vacancy-preview-card__content'})
+                content = div_content.div.div.text
+
+                div_card__company = div_card__top.find('div', attrs={'class': 'vacancy-preview-card__company-and-location'})
+                a_company = div_card__company.find('div', attrs={'class': 'vacancy-preview-card__company'})
+                company = a_company.span.a.text
+
                 #company = 'Без названия'
                 #logo = div.find('img')
                 #if logo:
                 #   company = logo['alt']
 
-                jobs.append({'title': title})
+                jobs.append({'title': title, 'url': domain + href, 'description': content, 'company': company})
         else:
             errors.append({'url': url, 'title': 'Div does not exist'})
     else:
         errors.append({'url': url, 'title': 'Page not found'})
 
-    return jobs
+    return jobs, errors
 
 if __name__ == '__main__':
     url = 'https://www.rabota.ru/vacancy/?query=python&location.ll=55.75396,37.620393&location.kind=region&location.radius=any&location.regionId=3&location.name=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0&sort=relevance'
-    jobs = rabota(url)
+    jobs, errors = rabota(url)
     h = codecs.open('work.txt', 'w', 'utf-8')
     h.write(str(jobs))
     h.close()
